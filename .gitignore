@@ -1,0 +1,16 @@
+# Ignore all files
+/*
+/plugins/terminal-notifier/**
+
+# Whitelist
+!plugins/
+!plugins/*
+!.gitignore
+!init.el
+
+# Ignore system-generated files and images #
+.DS_Store
+*.png
+*.jpg
+*.gif
+*.pdf
