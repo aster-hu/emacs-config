@@ -143,8 +143,8 @@
 ;;  ORG-AGENDA
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(setq org-agenda-files (list "gtd.org"
-			     "work.org"))
+(setq org-agenda-files (list "gtd.org"))
+			   ;;  "work.org"))
 
 ;; Open org-agenda at startup
 ;;(add-hook 'after-init-hook 'org-agenda-list)
