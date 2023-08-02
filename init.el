@@ -4,7 +4,7 @@
 
 (require 'org)
 (setq org-directory "~/Library/CloudStorage/Dropbox/000_Org-mode")
-(setq org-default-notes-file (concat org-directory "/capture.org"))
+(setq org-default-notes-file "capture.org")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  MELPA PACKAGE REPOSITORY
@@ -84,10 +84,13 @@
  '(org-journal-calendar-entry-face ((t (:foreground "light pink" :slant italic))))
  '(org-journal-calendar-scheduled-face ((t (:foreground "HotPink1" :slant italic)))))
 
-;; Prevent empty line when adding new entries
-(setq org-blank-before-new-entry (quote ((heading . nil)
-                                         (plain-list-item . nil))))
 
+;; Only leave empty line for heading
+(setq org-blank-before-new-entry '((heading . t) (plain-list-item . auto)))
+
+;; Function to ensure blank lines between headings and before contents
+(add-to-list 'load-path "~/.emacs.d/plugins")
+(load "org-fix-blank-lines.el")
 
 ;; when marking a todo as done, at the time
 ;; log into drawers right underneath the heading
@@ -140,15 +143,15 @@
 ;;  ORG-AGENDA
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(setq org-agenda-files (list (concat org-directory "/gtd.org")
-			     (concat org-directory "/work.org")))
+(setq org-agenda-files (list "gtd.org"
+			     "work.org"))
 
 ;; Open org-agenda at startup
 ;;(add-hook 'after-init-hook 'org-agenda-list)
 (add-hook 'after-init-hook '(lambda () (org-agenda nil "z")))
 
 ;; org-super-agenda custom commands
-(add-to-list 'load-path "~/plugins/org-super-agenda.el")
+;;(add-to-list 'load-path "~/plugins/org-super-agenda.el")
 (require 'org-super-agenda)
 (setq org-agenda-skip-deadline-if-done t
       org-agenda-skip-scheduled-if-done t
@@ -197,12 +200,13 @@
                            :face (:background "#7f1b19"))
 			  (:name "🛁 Reschedule"
 				 :scheduled past)
+			   ;; Ignore items that are already scheduled
+			  (:discard (:scheduled t))
 			  (:name "🌸 Important"
 				 :and (
 				 :priority>= "B"
-					     :todo ("NEXT")
-				 :not (:scheduled today)))
-                          (:name "⏳ Do it later"
+					     :todo ("NEXT")))			 
+			  (:name "⏳ Do it later"
 				 :and (
 				       :priority>= "B"
 						   :todo ("LATER")
@@ -214,10 +218,6 @@
                           (:name "✈️ Waiting"
 				 :todo "WAIT"
 				 :order 9)
-			 (:name "Unclassified"
-				 :discard (:scheduled today)
-				 ;; :anything t
-				 :order 10)
 			  ))))))))
 (add-hook 'org-agenda-mode-hook 'org-super-agenda-mode)
 
@@ -311,6 +311,8 @@
      (holiday-fixed 12 25 "Christmas Day")
      (holiday-fixed 12 26 "Boxing Day")))
  '(calendar-mark-holidays-flag t)
+ '(custom-safe-themes
+   '("f366d4bc6d14dcac2963d45df51956b2409a15b770ec2f6d730e73ce0ca5c8a7" "bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" "31deed4ac5d0b65dc051a1da3611ef52411490b2b6e7c2058c13c7190f7e199b" default))
  '(desktop-save-mode t)
  '(global-display-line-numbers-mode t)
  '(global-visual-line-mode nil)
@@ -348,7 +350,7 @@
  '(org-capture-templates
    '(("t" "Org-todo" entry
       (file "gtd.org")
-      (file "~templates/tpl-todo.org")
+      (file "templates/tpl-todo.org")
       :empty-lines-after 1)))
  '(org-cycle-separator-lines 1)
  '(org-hierarchical-todo-statistics nil)
@@ -357,10 +359,6 @@
  '(org-sparse-tree-open-archived-trees t)
  '(org-super-agenda-mode t)
  '(org-support-shift-select nil)
- '(org-wild-notifier-alert-time '(5))
- '(org-wild-notifier-keyword-blacklist '("DONE" "CANCEL"))
- '(org-wild-notifier-keyword-whitelist nil)
- '(org-wild-notifier-mode t)
  '(package-selected-packages
    '(org-beautify-theme org-journal moe-theme espresso-theme htmlize calfw-org calfw-ical ## org-gcal org-notifications alert windresize doom-themes gruvbox-theme org-caldav org-super-agenda calfw zenburn-theme spacemacs-theme color-theme-sanityinc-tomorrow catppuccin-theme atom-one-dark-theme))
  '(shift-select-mode t))
