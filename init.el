@@ -311,8 +311,6 @@
      (holiday-fixed 12 25 "Christmas Day")
      (holiday-fixed 12 26 "Boxing Day")))
  '(calendar-mark-holidays-flag t)
- '(custom-safe-themes
-   '("f366d4bc6d14dcac2963d45df51956b2409a15b770ec2f6d730e73ce0ca5c8a7" "bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" "31deed4ac5d0b65dc051a1da3611ef52411490b2b6e7c2058c13c7190f7e199b" default))
  '(desktop-save-mode t)
  '(global-display-line-numbers-mode t)
  '(global-visual-line-mode nil)
@@ -360,5 +358,5 @@
  '(org-super-agenda-mode t)
  '(org-support-shift-select nil)
  '(package-selected-packages
-   '(org-beautify-theme org-journal moe-theme espresso-theme htmlize calfw-org calfw-ical ## org-gcal org-notifications alert windresize doom-themes gruvbox-theme org-caldav org-super-agenda calfw zenburn-theme spacemacs-theme color-theme-sanityinc-tomorrow catppuccin-theme atom-one-dark-theme))
+   '(org-beautify-theme org-journal moe-theme espresso-theme htmlize calfw-org calfw-ical org-notifications alert windresize doom-themes gruvbox-theme org-caldav org-super-agenda calfw zenburn-theme spacemacs-theme color-theme-sanityinc-tomorrow catppuccin-theme atom-one-dark-theme))
  '(shift-select-mode t))
