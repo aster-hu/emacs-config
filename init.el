@@ -173,7 +173,8 @@
 	 (todo . " %-30 (if (or (not (car (last (org-get-outline-path)))) (string-blank-p (car (last (org-get-outline-path))))) \"\" (truncate-string-to-width (car (last (org-get-outline-path))) 25 nil nil t))")
         (tags . " %i %-12:c")
         (search . " %i %-12:c"))
-)
+      )
+
 (setq org-agenda-custom-commands
       '(("z" "Super view"
          ((agenda "" ((org-agenda-span 'day)
@@ -187,10 +188,10 @@
 			 (:name "Meeting"
 				:todo "MEETING")
 			 ))))
-	            (alltodo "" ((org-agenda-overriding-header "")
-                       (org-super-agenda-groups
-                        '(;; Each group has an implicit boolean OR operator between its selectors.
-			 (:name "🔥 Due Today"
+	  (alltodo "" ((org-agenda-overriding-header "")
+		       (org-super-agenda-groups
+                        ;; Each group has an implicit boolean OR operator between its selectors.
+			'((:name "🔥 Due Today"
                            :deadline today
                            :face (:foreground "#FF80ED"))
                           (:name "☠️ Passed deadline"
