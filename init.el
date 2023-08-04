@@ -170,7 +170,7 @@
 	;; evaluates to true. In either of these cases, "gtd" will be displayed. Otherwise, it will truncate the last element of the outline path
 	;; This displays the TODO keyword, left-aligned in a 30-character wide column.
 	;; It takes the last element of the outline path (the current headline) and truncates it to a maximum of 25 characters
-	 (todo . " %-30 (if (or (not (car (last (org-get-outline-path)))) (string-blank-p (car (last (org-get-outline-path))))) \"\" (truncate-string-to-width (car (last (org-get-outline-path))) 25 nil nil t))")
+	(todo . " %-30 (if (or (not (car (last (org-get-outline-path)))) (string-blank-p (car (last (org-get-outline-path))))) \"\" (truncate-string-to-width (car (last (org-get-outline-path))) 25 nil nil t))")
         (tags . " %i %-12:c")
         (search . " %i %-12:c"))
       )
@@ -231,7 +231,8 @@
 
 ;; Show outline path when refiling
 (setq org-outline-path-complete-in-steps nil
-      org-refile-use-outline-path t)
+      org-refile-use-outline-path t
+      org-refile-allow-creating-parent-nodes (quote confirm))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  QUERY SEARCH FOR BACKLOG ITEMS
