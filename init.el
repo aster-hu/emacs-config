@@ -32,14 +32,24 @@
 
 ;; Headline cannot be DONE unless all children are DONE
 (setq-default org-enforce-todo-dependencies t)
+;; Hide the first N-1 stars in a headline
+(setq org-hide-leading-stars t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  THEME
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; use variable-pitch fonts for some headings and titles
+(setq zenburn-use-variable-pitch t)
+
+;; scale headings in org-mode
+(setq zenburn-scale-org-headlines t)
+
+;; scale headings in outline-mode
+(setq zenburn-scale-outline-headlines t)
+
 ;; Load theme without the pop up message
 (load-theme 'zenburn t nil)
-
 
 ;; Customize highlight TODO keywords
 (setq org-todo-keyword-faces
@@ -59,7 +69,8 @@
   (org-bullets-bullet-list '("◉" "☷" "○" "◆" "▲" "▶")))
 
 ;; Define ellipsis
-;; (setq org-ellipsis " ⏷ ")
+; (setq org-ellipsis " ⏷ ")
+(setq org-ellipsis "⤵")
 
 ;; Change priority style via org-fancy-priorities
 (use-package org-fancy-priorities
@@ -67,6 +78,8 @@
   :config
   (setq org-fancy-priorities-list '("⬆" "⬌" "⬇" "☕"))
   (add-hook 'org-mode-hook 'org-fancy-priorities-mode))
+
+
 
 
 ;; Strikethrough the DONE items and set fonts
@@ -77,16 +90,17 @@
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  '(default ((t (:family "Hack" :foundry "nil" :slant normal :weight normal :height 201 :width normal))))
+ '(fixed-pitch ((t nil)))
  '(holiday ((t (:background "chartreuse" :foreground "black"))))
  '(mode-line ((t nil)))
  '(org-agenda-date-today ((t (:foreground "light green" :slant italic :weight bold))))
  '(org-headline-done ((((class color) (min-colors 16) (background dark)) (:foreground "#9c9197" :strike-through t))))
  '(org-journal-calendar-entry-face ((t (:foreground "light pink" :slant italic))))
- '(org-journal-calendar-scheduled-face ((t (:foreground "HotPink1" :slant italic)))))
-
+ '(org-journal-calendar-scheduled-face ((t (:foreground "HotPink1" :slant italic))))
+ '(variable-pitch ((t (:family "Hack")))))
 
 ;; Only leave empty line for heading
-(setq org-blank-before-new-entry '((heading . t) (plain-list-item . auto)))
+;;(setq org-blank-before-new-entry '((heading . t) (plain-list-item . auto)))
 
 ;; Function to ensure blank lines between headings and before contents
 (add-to-list 'load-path "~/.emacs.d/plugins")
@@ -98,7 +112,8 @@
       org-log-into-drawer t)
 
 ;; Set the tags location
-(setq org-tags-column -72)
+(setq org-tags-column -72
+      org-agenda-tags-column -102)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  BUFFER MANAGEMENT
@@ -159,7 +174,7 @@
       org-agenda-skip-additional-timestamps-same-entry t
       org-agenda-start-with-log-mode t
       org-agenda-format-date "%F %a"
-      org-agenda-remove-tags t ;; hide all tags
+      org-agenda-remove-tags nil ;; don't hide all tags
       org-agenda-prefix-format
       '((agenda . " %i %-12:c%?-12t% s")
         (timeline . "  % s")
@@ -313,7 +328,10 @@
      (holiday-fixed 12 25 "Christmas Day")
      (holiday-fixed 12 26 "Boxing Day")))
  '(calendar-mark-holidays-flag t)
+ '(custom-safe-themes
+   '("871b064b53235facde040f6bdfa28d03d9f4b966d8ce28fb1725313731a2bcc8" "14ba61945401e42d91bb8eef15ab6a03a96ff323dd150694ab8eb3bb86c0c580" "046a2b81d13afddae309930ef85d458c4f5d278a69448e5a5261a5c78598e012" "afa47084cb0beb684281f480aa84dab7c9170b084423c7f87ba755b15f6776ef" "02f57ef0a20b7f61adce51445b68b2a7e832648ce2e7efb19d217b6454c1b644" "a44e2d1636a0114c5e407a748841f6723ed442dc3a0ed086542dc71b92a87aee" "f366d4bc6d14dcac2963d45df51956b2409a15b770ec2f6d730e73ce0ca5c8a7" "00cec71d41047ebabeb310a325c365d5bc4b7fab0a681a2a108d32fb161b4006" "e5616f027ca0c17597ae35e6643a129b4ddaf0f64fdf45669b561e0e47c3ada5" "bebec7cd48f56fbca1c878d7f43ece10d5390ab95790883d95ae4c0f6045600a" default))
  '(desktop-save-mode t)
+ '(doom-themes-enable-bold nil)
  '(global-display-line-numbers-mode t)
  '(global-visual-line-mode nil)
  '(global-visual-line-mode-hook nil)
@@ -330,6 +348,7 @@
      (holiday-fixed 11 11 "Remembrance Day")
      (holiday-fixed 12 25 "Christmas Day")
      (holiday-fixed 12 26 "Boxing Day")))
+ '(line-spacing 0.3)
  '(org-M-RET-may-split-line nil)
  '(org-adapt-indentation t)
  '(org-agenda-current-time-string "now - - - - - - - - - - - - - - - - - - - - - ")
@@ -360,5 +379,5 @@
  '(org-super-agenda-mode t)
  '(org-support-shift-select nil)
  '(package-selected-packages
-   '(org-beautify-theme org-journal moe-theme espresso-theme htmlize calfw-org calfw-ical org-notifications alert windresize doom-themes gruvbox-theme org-caldav org-super-agenda calfw zenburn-theme spacemacs-theme color-theme-sanityinc-tomorrow catppuccin-theme atom-one-dark-theme))
+   '(ef-themes leuven-theme org-beautify-theme org-journal moe-theme espresso-theme htmlize calfw-org calfw-ical org-notifications alert windresize doom-themes gruvbox-theme org-caldav org-super-agenda calfw zenburn-theme spacemacs-theme color-theme-sanityinc-tomorrow catppuccin-theme atom-one-dark-theme))
  '(shift-select-mode t))
