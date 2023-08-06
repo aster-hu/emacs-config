@@ -6,6 +6,8 @@
 (setq org-directory "~/Library/CloudStorage/Dropbox/000_Org-mode")
 (setq org-default-notes-file "capture.org")
 
+(global-auto-revert-mode)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  MELPA PACKAGE REPOSITORY
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -370,7 +372,7 @@
    '(("t" "Org-todo" entry
       (file "gtd.org")
       (file "templates/tpl-todo.org")
-      :empty-lines-after 1)))
+      :empty-lines-after 0)))
  '(org-cycle-separator-lines 1)
  '(org-hierarchical-todo-statistics nil)
  '(org-priority-faces '((67 . "#3a67bf") (66 . "#ad95e6") (65 . "#ff7fb8")))
