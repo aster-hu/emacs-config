@@ -6,8 +6,6 @@
 (setq org-directory "~/Library/CloudStorage/Dropbox/000_Org-mode")
 (setq org-default-notes-file "capture.org")
 
-(global-auto-revert-mode)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  MELPA PACKAGE REPOSITORY
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
