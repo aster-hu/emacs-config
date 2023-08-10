@@ -175,6 +175,7 @@
       org-agenda-start-with-log-mode t
       org-agenda-format-date "%F %a"
       org-agenda-remove-tags nil ;; don't hide all tags
+      org-agenda-dim-blocked-tasks 'invisible ;; Make blocked tasks invisible
       org-agenda-prefix-format
       '((agenda . " %i %-12:c%?-12t% s")
         (timeline . "  % s")
