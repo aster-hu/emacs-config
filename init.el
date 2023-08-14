@@ -218,7 +218,7 @@
 			  (:name "🛁 Reschedule"
 				 :scheduled past)
 			   ;; Ignore items that are already scheduled
-			  (:discard (:scheduled t))
+			  (:discard (:scheduled t))			  
 			  (:name "🌸 Important"
 				 :and (
 				 :priority>= "B"
