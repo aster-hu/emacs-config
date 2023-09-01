@@ -40,24 +40,35 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; use variable-pitch fonts for some headings and titles
-(setq zenburn-use-variable-pitch t)
-
+;; (setq zenburn-use-variable-pitch t)
 ;; scale headings in org-mode
-(setq zenburn-scale-org-headlines t)
-
+;; (setq zenburn-scale-org-headlines t)
 ;; scale headings in outline-mode
-(setq zenburn-scale-outline-headlines t)
+;; (setq zenburn-scale-outline-headlines t)
 
 ;; Load theme without the pop up message
 (load-theme 'zenburn t nil)
 
+;; Customize headlines height
+(custom-set-faces
+  '(org-level-1 ((t (:inherit outline-1 :height 1.25 :family "Arial"))))
+  '(org-level-2 ((t (:inherit outline-2 :height 1.2))))
+  '(org-level-3 ((t (:inherit outline-3 :height 1.15))))
+  '(org-level-4 ((t (:inherit outline-4 :height 1.1))))
+  '(org-level-5 ((t (:inherit outline-5 :height 1.0))))
+  (set-face-attribute 'org-document-title nil :height 1.3 :underline t)
+)
+
+
 ;; Customize highlight TODO keywords
 (setq org-todo-keyword-faces
-      (quote (;; ("PROJ" :foreground "#ffe599" :weight bold)
+      (quote (;; 
 	      ("NEXT" :foreground "#E8A0BF" :weight bold)
               ("LATER" :foreground "#BA90C6" :weight bold)
               ("WAIT" :foreground "#76b1d1" :weight bold)
-              ("DONE" :foreground "#97dc97" :weight bold)    
+              ("DONE" :foreground "#97dc97" :weight bold)
+              ("ACHIEVE" :foreground "#97dc97" :weight bold)    
+              ("MISS" :foreground "#ffe599" :weight bold)
               ("CANCEL" :foreground "#7C9D96" :weight bold)
               ("NOTE" :foreground "#d0bf8f" :weight bold))))
 
@@ -151,6 +162,7 @@
   (global-set-key (kbd "C-c c") #'org-capture)
   (global-set-key (kbd "C-c b") #'org-switchb)
   (global-set-key (kbd "C-c j")  'org-journal-new-date-entry)
+  (global-set-key (kbd "C-c C-k" ) 'org-store-link)
   )
 
 
@@ -192,7 +204,8 @@
       )
 
 (setq org-agenda-custom-commands
-      '(("z" "Super view"
+      '(
+        ("z" "Super view"
          ((agenda "" ((org-agenda-span 'day)
 		      (org-super-agenda-groups
                        '((:name "====================================================================================="
@@ -214,7 +227,7 @@
 				 :and (
 				 :deadline past
 				 :todo ("NEXT" "LATER"))
-                           :face (:background "#7f1b19"))
+                           :face (:foreground "#FF7980"))
 			  (:name "🛁 Reschedule"
 				 :scheduled past)
 			   ;; Ignore items that are already scheduled
@@ -235,8 +248,23 @@
                           (:name "✈️ Waiting"
 				 :todo "WAIT"
 				 :order 9)
-			  ))))))))
+			  ))))))
+  ;;       ("g" "Goal review panel"
+	;;  ((tags "Goal=\"Epic\""
+	;; 	((org-agenda-overriding-header "Epic goals (evergreen)")))
+	;;   (tags "Goal=\"Long\""
+	;; 	((org-agenda-overriding-header "Long term goals (2-5 years)")))
+	;;   (tags "Goal=\"Medium\""
+	;; 	((org-agenda-overriding-header "Medium term goals (half year to 2 years)")))
+	;;   (tags "Goal=\"Short\""
+	;; 	((org-agenda-overriding-header "Short term goals (within 6 months)")))
+	;;   (tags-todo "Goal=\"\""
+	;; 	     ((org-agenda-overriding-header "Dormant goal / non-goal"))))
+	;;  ((org-agenda-files (list "goal.org"))))
+   ))
+
 (add-hook 'org-agenda-mode-hook 'org-super-agenda-mode)
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  SET REFILE TARGET LOCATION
@@ -279,6 +307,27 @@
 (require 'calfw-org)
 ;;(setq cfw:org-overwrite-default-keybinding t) ;; org like keybinding
 ;;(cfw:open-ical-calendar "http://www.google.com/calendar/ical/.../basic.ics")
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  GOAL SETTING CAPTURE TEMPLATE KEYS BINDING
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ (setq org-capture-templates
+   '(("t" "Org-todo" entry
+      (file "gtd.org")
+      (file "templates/tpl-todo.org")
+      :empty-lines-after 0)
+     ("g" "Goals") 
+     ("ge" "Epic goals" entry (file+headline "goal.org" 
+					     "Epic goals") (file "templates/tpl-goal.org") :empty-lines-after 1) 
+     ("gl" "Long term goal (2-5 years from now)" entry (file+headline "goal.org" 
+								      "Long term goals") (file "templates/tpl-goal.org") :empty-lines-after 1) 
+     ("gm" "Medium term goal (6 months up to 2 years)" entry (file+headline "goal.org" 
+									    "Medium term goals") (file "templates/tpl-goal.org") :empty-lines-after 1) 
+     ("gs" "Short term goals (next 6 months)" entry (file+headline "goal.org" 
+								   "Short term goals") (file "templates/tpl-goal.org") :empty-lines-after 1)
+     ))
+
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  ORG-JOURNAL
@@ -330,7 +379,7 @@
      (holiday-fixed 12 26 "Boxing Day")))
  '(calendar-mark-holidays-flag t)
  '(custom-safe-themes
-   '("871b064b53235facde040f6bdfa28d03d9f4b966d8ce28fb1725313731a2bcc8" "14ba61945401e42d91bb8eef15ab6a03a96ff323dd150694ab8eb3bb86c0c580" "046a2b81d13afddae309930ef85d458c4f5d278a69448e5a5261a5c78598e012" "afa47084cb0beb684281f480aa84dab7c9170b084423c7f87ba755b15f6776ef" "02f57ef0a20b7f61adce51445b68b2a7e832648ce2e7efb19d217b6454c1b644" "a44e2d1636a0114c5e407a748841f6723ed442dc3a0ed086542dc71b92a87aee" "f366d4bc6d14dcac2963d45df51956b2409a15b770ec2f6d730e73ce0ca5c8a7" "00cec71d41047ebabeb310a325c365d5bc4b7fab0a681a2a108d32fb161b4006" "e5616f027ca0c17597ae35e6643a129b4ddaf0f64fdf45669b561e0e47c3ada5" "bebec7cd48f56fbca1c878d7f43ece10d5390ab95790883d95ae4c0f6045600a" default))
+   '("e3daa8f18440301f3e54f2093fe15f4fe951986a8628e98dcd781efbec7a46f2" "f366d4bc6d14dcac2963d45df51956b2409a15b770ec2f6d730e73ce0ca5c8a7" default))
  '(desktop-save-mode t)
  '(doom-themes-enable-bold nil)
  '(global-display-line-numbers-mode t)
@@ -367,11 +416,6 @@
    '((daily today require-timed remove-match)
      (900 1200 1800 2300)
      "......" "----------------"))
- '(org-capture-templates
-   '(("t" "Org-todo" entry
-      (file "gtd.org")
-      (file "templates/tpl-todo.org")
-      :empty-lines-after 0)))
  '(org-cycle-separator-lines 1)
  '(org-hierarchical-todo-statistics nil)
  '(org-priority-faces '((67 . "#3a67bf") (66 . "#ad95e6") (65 . "#ff7fb8")))
@@ -380,5 +424,5 @@
  '(org-super-agenda-mode t)
  '(org-support-shift-select nil)
  '(package-selected-packages
-   '(treemacs ef-themes leuven-theme org-beautify-theme org-journal moe-theme espresso-theme htmlize calfw-org calfw-ical org-notifications alert windresize doom-themes gruvbox-theme org-caldav org-super-agenda calfw zenburn-theme spacemacs-theme color-theme-sanityinc-tomorrow catppuccin-theme atom-one-dark-theme))
+   '(timu-macos-theme timu-spacegrey-theme treemacs ef-themes leuven-theme org-beautify-theme org-journal moe-theme espresso-theme htmlize calfw-org calfw-ical org-notifications alert windresize doom-themes gruvbox-theme org-caldav org-super-agenda calfw zenburn-theme spacemacs-theme color-theme-sanityinc-tomorrow catppuccin-theme atom-one-dark-theme))
  '(shift-select-mode t))
