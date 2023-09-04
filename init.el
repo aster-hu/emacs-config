@@ -1,25 +1,75 @@
+;; Maintain startup speed
+;; ensure shell-file-name doesn't perform expensive startup
+;; https://github.com/jmccarrell/literate-emacs.d/blob/master/jeff-emacs-config.org#what-is--conorcs
+(defun jwm/shell-is-zsh-p ()
+  (string-suffix-p "zsh" shell-file-name))
+
+(when (jwm/shell-is-zsh-p)
+  (setq shell-command-switch "-cf"))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  PACKAGE MANAGEMENT
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(eval-and-compile
+  (require 'package)
+  (setq package-archives '(("melpa" . "https://melpa.org/packages/")
+                         ("org" . "https://orgmode.org/elpa/")
+                         ("elpa" . "https://elpa.gnu.org/packages/")))
+  (package-initialize)
+  (require 'use-package)
+  ;; i don't really know why this isn't the default...
+  (setf use-package-always-ensure t))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  THEME
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Load theme without the pop up message
+;; (load-theme 'doom-monokai-machine t)
+;; (load-theme 'doom-nord-light t)
+;; (load-theme 'doom-monokai-ristretto t)
+
+;; Auto switch light/dark theme
+;; Adapted from https://yannesposito.com/posts/0014-change-emacs-theme-automatically/index.html
+(defun y/auto-update-theme ()
+  "depending on time use different theme"
+  ;; morning to afternoon: nord-light
+  ;; night: monokai-machine
+  (let* ((hour (nth 2 (decode-time (current-time))))
+         (theme (cond ((<= 6 hour 18)   'doom-nord-light)
+                      (t               'doom-monokai-machine))))
+    (when (not (equal custom-enabled-themes theme))
+      (disable-theme custom-enabled-themes)
+      (load-theme theme t))
+    ;; run that function again next hour
+    (run-at-time (format "%02d:%02d" (+ hour 1) 0) nil 'y/auto-update-theme)))
+
+(y/auto-update-theme)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  Set up org directory
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(require 'org)
-(setq org-directory "~/Library/CloudStorage/Dropbox/000_Org-mode")
-(setq org-default-notes-file "capture.org")
+;;(require 'org)
+(use-package org
+  :init
+  (setq org-directory "~/Library/CloudStorage/Dropbox/000_Org-mode")
+  (setq org-default-notes-file "capture.org")
+  (setq org-roam-directory (concat org-directory "/roam"))
+  )
+;; (setq org-directory "~/Library/CloudStorage/Dropbox/000_Org-mode")
+;; (setq org-default-notes-file "capture.org")
+;; (setq org-roam-directory (concat org-directory "/roam"))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  MELPA PACKAGE REPOSITORY
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; get rid of all of the backup files; that is what revision control is for.
+(setq backup-before-writing nil)
+(setq make-backup-files nil)
 
-;; Add melpa repository
-(require 'package)
-(setq package-archives '(("melpa" . "https://melpa.org/packages/")
-                         ("org" . "https://orgmode.org/elpa/")
-                         ("elpa" . "https://elpa.gnu.org/packages/")))
-(package-initialize)
-
-;; LANGUAGE
-;;(set-language-environment 'UTF-8)
-;;(set-locale-environment "UTF-8")
+;; prefer utf-8 encoding in all cases.
+(let ((lang 'utf-8))
+  (set-language-environment lang)
+  (prefer-coding-system lang))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  TODO keywords
@@ -34,14 +84,6 @@
 (setq-default org-enforce-todo-dependencies t)
 ;; Hide the first N-1 stars in a headline
 (setq org-hide-leading-stars t)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  THEME
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; Load theme without the pop up message
-(load-theme 'doom-monokai-machine t)
-;; (load-theme 'doom-nord-light t)
 
 
 ;; Set font
@@ -58,13 +100,12 @@ charset
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
-;;  '(default ((t (:family "Hack" :foundry "nil" :slant normal :weight normal :height 201 :width normal))))
  '(fixed-pitch ((t nil)))
  '(holiday ((t (:background "chartreuse" :foreground "black"))))
  '(mode-line ((t nil)))
  '(org-agenda-date-today ((t (:foreground "light green" :slant italic :weight bold))))
  '(org-document-title ((t (:height 1.5 :underline nil))))
- '(org-headline-done ((((class color) (min-colors 16) (background dark)) (:foreground "#9c9197" :strike-through t))))
+ '(org-headline-done ((((class color) (min-colors 16) (background dark)) (:foreground "#9c9197" :strike-through nil))))
  '(org-journal-calendar-entry-face ((t (:foreground "light pink" :slant italic))))
  '(org-journal-calendar-scheduled-face ((t (:foreground "HotPink1" :slant italic))))
  '(org-level-1 ((t (:inherit outline-1 :height 1.35 :family "DejaVu Sans Mono" :weight bold))))
@@ -130,13 +171,14 @@ charset
 (add-to-list 'load-path "~/.emacs.d/plugins")
 (load "org-fix-blank-lines.el")
 
+
 ;; when marking a todo as done, at the time
 ;; log into drawers right underneath the heading
 (setq org-log-done 'time  
       org-log-into-drawer t)
 
-;; Parent todo can be marked as completed even when there're dependencies
-(setq org-enforce-todo-dependencies nil)
+;; Parent todo can only be marked as completed even when there're dependencies
+(setq org-enforce-todo-dependencies t)
 
 ;; Set the tags location
 (setq org-tags-column -72
@@ -147,42 +189,24 @@ charset
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Remove messages from the *Messages* buffer.
-(setq-default message-log-max nil)
+;; (setq-default message-log-max nil)
 
 ;; Remove messages and scratch buffer
-(add-hook 'after-init-hook (lambda () (when (get-buffer "*scratch*") (kill-buffer "*scratch*") (when (get-buffer "*Messages*") (kill-buffer "*Messages*")))))
+;; (add-hook 'after-init-hook (lambda () (when (get-buffer "*scratch*") (kill-buffer "*scratch*") (when (get-buffer "*Messages*") (kill-buffer "*Messages*")))))
+
+;; (add-hook 'after-init-hook (lambda () (when (get-buffer "*scratch*") (kill-buffer "*scratch*"))))
+
+;; Kill all buffer except current one
+(defun my/kill-other-buffers ()
+      "Kill all other buffers."
+      (interactive)
+      (mapc 'kill-buffer (delq (current-buffer) (buffer-list))))
 
 ;; Enable a interactive divider
 (setq window-divider-mode t)
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  KEYBOARD SHORTCUTS
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
-;; Custom keyboard shortcuts
-(progn
-  (global-set-key (kbd "M-s") 'save-buffer)
-  (global-set-key (kbd "M-w") 'kill-buffer)
-  (global-set-key (kbd "M-f") 'isearch-forward)
-  (global-set-key (kbd "M-c") 'kill-ring-save)
-  (global-set-key (kbd "M-v") 'yank)
-  (global-set-key (kbd "M-z") 'undo)
-  (global-set-key (kbd "C-c <left>")  'windmove-left)
-  (global-set-key (kbd "C-c <right>") 'windmove-right)
-  (global-set-key (kbd "C-c <up>")    'windmove-up)
-  (global-set-key (kbd "C-c <down>")  'windmove-down)
-  
-  (global-set-key (kbd "C-c l") #'org-store-link)
-  (global-set-key (kbd "C-c a") #'org-agenda)
-  (global-set-key (kbd "C-c c") #'org-capture)
-  (global-set-key (kbd "C-c b") #'org-switchb)
-  ;; (global-set-key (kbd "C-c j")  'org-journal-new-date-entry)
-  (global-set-key (kbd "C-M-f" ) 'consult-org-roam-search)
-  (global-set-key (kbd "C-c i d" ) 'org-id-get-create)
-  (global-set-key (kbd "<f12>" ) 'org-transclusion-add)
-  (global-set-key (kbd "C-c n t" ) 'org-transclusion-mode)
-  )
+;; revert buffers automatically when underlying files are changed externally
+(global-auto-revert-mode t)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  ORG-AGENDA
@@ -197,7 +221,9 @@ charset
 
 ;; org-super-agenda custom commands
 ;;(add-to-list 'load-path "~/plugins/org-super-agenda.el")
-(require 'org-super-agenda)
+;; (require 'org-super-agenda)
+(use-package org-super-agenda
+:config
 (setq org-agenda-skip-deadline-if-done t
       org-agenda-skip-scheduled-if-done t
       org-agenda-include-deadlines t
@@ -221,8 +247,7 @@ charset
         (tags . " %i %-12:c")
         (search . " %i %-12:c"))
       )
-
-(setq org-agenda-custom-commands
+      (setq org-agenda-custom-commands
       '(
         ("z" "Super view"
          ((agenda "" ((org-agenda-span 'day)
@@ -281,16 +306,15 @@ charset
 	;; 	     ((org-agenda-overriding-header "Dormant goal / non-goal"))))
 	;;  ((org-agenda-files (list "goal.org"))))
    ))
-
-(add-hook 'org-agenda-mode-hook 'org-super-agenda-mode)
-
+   :hook (org-agenda-mode-hook . org-super-agenda-mode)
+      )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  SET REFILE TARGET LOCATION
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(setq org-refile-targets '((nil :maxlevel . 2)
-                           ("gtd.org" :maxlevel . 3)))
+(setq org-refile-targets '((nil :maxlevel . 9)
+                           ("gtd.org" :maxlevel . 9)))
 
 ;; Show outline path when refiling
 (setq org-outline-path-complete-in-steps nil
@@ -322,8 +346,8 @@ charset
 ;;  CALENDAR
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(require 'calfw-ical)
-(require 'calfw-org)
+;;(require 'calfw-ical)
+;;(require 'calfw-org)
 ;;(setq cfw:org-overwrite-default-keybinding t) ;; org like keybinding
 ;;(cfw:open-ical-calendar "http://www.google.com/calendar/ical/.../basic.ics")
 
@@ -334,33 +358,37 @@ charset
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
  (setq org-capture-templates
-   '(("t" "Org-todo" entry
-      (file "gtd.org")
-      (file "templates/tpl-todo.org")
-      :empty-lines-after 0)
-     ("g" "Goals") 
-     ("ge" "Epic goals" entry (file+headline "goal.org" 
-					     "Epic goals") (file "templates/tpl-goal.org") :empty-lines-after 1) 
-     ("gl" "Long term goal (2-5 years from now)" entry (file+headline "goal.org" 
-								      "Long term goals") (file "templates/tpl-goal.org") :empty-lines-after 1) 
-     ("gm" "Medium term goal (6 months up to 2 years)" entry (file+headline "goal.org" 
-									    "Medium term goals") (file "templates/tpl-goal.org") :empty-lines-after 1) 
-     ("gs" "Short term goals (next 6 months)" entry (file+headline "goal.org" 
-								   "Short term goals") (file "templates/tpl-goal.org") :empty-lines-after 1)
-     ("r" "Review") 
-     ("rw" "Weekly review" entry 
-               (file buffer-name)
-               (file "templates/tpl-w-review.org")) 
-     ("rm" "Monthly review" entry 
-               (file buffer-name)
-               (file "templates/tpl-m-review.org"))
-     ("rq" "Quarterly review" entry 
-               (file buffer-name)
-               (file "templates/tpl-q-review.org")) 
-     ("ra" "Annual review" entry 
-               (file buffer-name)
-               (file "templates/tpl-a-review.org"))            
-     ))
+       '(("c" "capture" entry
+	  (file "capture.org")
+          "* %?\n"
+          :empty-lines-after 1)
+	 ("t" "Org-todo" entry
+	  (file "gtd.org")
+	  (file "templates/tpl-todo.org")
+	  :empty-lines-after 0)
+	 ("g" "Goals") 
+	 ("ge" "Epic goals" entry (file+headline "goal.org" 
+						 "Epic goals") (file "templates/tpl-goal.org") :empty-lines-after 1) 
+	 ("gl" "Long term goal (2-5 years from now)" entry (file+headline "goal.org" 
+									  "Long term goals") (file "templates/tpl-goal.org") :empty-lines-after 1) 
+	 ("gm" "Medium term goal (6 months up to 2 years)" entry (file+headline "goal.org" 
+										"Medium term goals") (file "templates/tpl-goal.org") :empty-lines-after 1) 
+	 ("gs" "Short term goals (next 6 months)" entry (file+headline "goal.org" 
+								       "Short term goals") (file "templates/tpl-goal.org") :empty-lines-after 1)
+	 ("r" "Review") 
+	 ("rw" "Weekly review" entry 
+          (file buffer-name)
+          (file "templates/tpl-w-review.org")) 
+	 ("rm" "Monthly review" entry 
+          (file buffer-name)
+          (file "templates/tpl-m-review.org"))
+	 ("rq" "Quarterly review" entry 
+          (file buffer-name)
+          (file "templates/tpl-q-review.org")) 
+	 ("ra" "Annual review" entry 
+          (file buffer-name)
+          (file "templates/tpl-a-review.org"))            
+	 ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  ORG-JOURNAL
@@ -387,22 +415,13 @@ charset
 ;;   )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;  AUTO COMPLETION
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(use-package vertico
-  :ensure t
-  :init
-  (vertico-mode))
-
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  ORG-ROAM
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (use-package org-roam
   :ensure t
   :custom
-  (org-roam-directory (concat org-directory "/roam"))
+  ;; (org-roam-directory (concat org-directory "/roam"))
   (org-roam-dailies-directory "journals/")
   (org-roam-completion-everywhere t)
   ;; (org-roam-capture-templates
@@ -410,10 +429,11 @@ charset
   ;; :if-new (file+head "%<%y%m%d%H%M%S>-${slug}.org" "#+title: ${title}\n#+roam_alias:\n#+filetags: \n\n")
   ;; :unnarrowed t))) 
   (org-roam-dailies-capture-templates
-    '(("d" "default" plain "- %<%H:%M> %?"
+    '(
+      ("d" "default" entry "* %<%H:%M> %?"
        :if-new (file+head "%<%Y-%m-%d %a>.org" "#+title: %<%Y-%m-%d %a>\n\n")
        :unnarrowed t)
-       ))
+      ))
   :bind (("C-c n l" . org-roam-buffer-toggle)
          ("C-c n f" . org-roam-node-find)
          ("C-c n g" . org-roam-ui-mode)
@@ -421,6 +441,7 @@ charset
          ("C-c n i" . org-roam-node-insert)
          ;; Dailies
          ("C-c n j" . org-roam-dailies-capture-today)
+         ("C-c n d d" . org-roam-dailies-goto-today)
          ("C-c n d y" . org-roam-dailies-goto-yesterday)
          ("C-c n d t" . org-roam-dailies-goto-tomorrow)
         ;;  :map org-mode-map
@@ -451,28 +472,32 @@ charset
 (setq org-roam-capture-templates
       '(
         ("m" "main" plain
-         "\n*Metadata*\nLink: %?\nArea: \nResource: \n\n"
+         "\n*Metadata*\nArea: %?\nResource: \nLink: \n\n"
          :if-new (file+head "1-main/${slug}.org"
                             "#+title: ${title}\n")
          :immediate-finish t
-         :unnarrowed t)
+         :unnarrowed t
+         :empty-lines-after 1)
         ("r" "resource" plain
-        "\n*Metadata*\nLink: %?\nArea: \nResource: \n\n"
+        "\n*Metadata*\nArea: %?\nResource: \nLink: \n\n"
          :if-new
          (file+head "2-resource/${slug}.org" "#+title: ${title}\n")
          :immediate-finish t
-         :unnarrowed t)
+         :unnarrowed t
+         :empty-lines-after 1)
         ("a" "article" plain
-        "\n*Metadata*\nLink: %?\nArea: \nResource: \n\n"
+        "\n*Metadata*\nArea: %?\nResource: \nLink: \n\n"
          :if-new
          (file+head "3-article/${slug}.org" "#+title: ${title}\n#+filetags: :article:\n")
          :immediate-finish t
-         :unnarrowed t)
+         :unnarrowed t
+         :empty-lines-after 1)
          ("e" "review" plain "%?"
          :if-new
          (file+head "4-review/${slug}.org" "#+title: ${title}\n#+filetags: :review:\n\n\n")
          :immediate-finish t
-         :unnarrowed t)
+         :unnarrowed t
+         :empty-lines-after 1)
                ))
 
 ;; preview link at the mouse 
@@ -497,14 +522,162 @@ charset
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  AUTO COMPLETION
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; This enables candidates matching to be case-insensitive
+(setq completion-ignore-case t)
+
+;; (use-package vertico
+;;   :ensure t
+;;   :custom
+;;   (vertico-cycle t) ;; Cycle through result
+;;   :init
+;;   (vertico-mode))
+
+;; Optionally use the `orderless' completion style.
+;; (use-package orderless
+;;   :init
+;;   ;; Configure a custom style dispatcher (see the Consult wiki)
+;;   ;; (setq orderless-style-dispatchers '(+orderless-consult-dispatch orderless-affix-dispatch)
+;;   ;;       orderless-component-separator #'orderless-escapable-split-on-space)
+;;   (setq completion-styles '(orderless basic)
+;;         completion-category-defaults nil
+;;         completion-category-overrides '((file (styles partial-completion)))))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  company
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; Company
+;; You need package called `company`.
+;; I believe what these variables are meant to do is self-explanatory.
+;; You type minimum 2 characters and wait for ¼ seconds for the candidates
+;; to appear automatically. It uses a backend `company-capf` (part of
+;; `company`; capf stands for "completion-at-point function"). I would
+;; call it inline automatic completion. Org-roam has functions to work
+;; with `company-capf`.
+;; (use-package company)
+;; ;; To automatically close "]]" brackets and other parentheses,
+;; ;; you need a package called "smartparens" Set it up globally.
+;; (smartparens-global-mode t)
+;; (global-company-mode)
+;; (setq company-minimum-prefix-length 2)
+;; (setq company-idle-delay 0.25)
+;; (setq company-backends '(company-capf))
+
+(use-package company
+:ensure t
+:after org-roam
+:config
+(add-hook 'after-init-hook 'global-company-mode)
+(setq company-minimum-prefix-length 2)
+(setq company-idle-delay 0.25)
+:init
+(with-eval-after-load 'company
+;; (define-key company-active-map (kbd “C-n”) #'company-select-next)
+;; (define-key company-active-map (kbd “C-p”) #'company-select-previous)
+(add-to-list 'company-backends 'company-capf)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  HELM
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; http://tuhdo.github.io/helm-intro.html
+
+(setq helm-split-window-in-side-p           t ; open helm buffer inside current window, not occupy whole other window
+      helm-move-to-line-cycle-in-source     t ; move to end or beginning of source when reaching top or bottom of source.
+      helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
+      helm-scroll-amount                    8 ; scroll 8 lines other window using M-<next>/M-<prior>
+      helm-ff-file-name-history-use-recentf t
+      helm-echo-input-in-header-line t)
+
+(setq helm-candidate-number-limit 999
+      helm-autoresize-max-height 40
+      helm-autoresize-min-height 40)
+
+(helm-mode 1)
+(add-hook 'helm-mode-hook 'helm-autoresize-mode)
+
+;; Enable electric pair mode and add auto complete for ~tilde~ and {bracket}
+(electric-pair-mode 1)
+(setq electric-pair-pairs
+      '((?\~ . ?\~)
+        (?\{ . ?\})))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  CASE INSENSITIVE SEARCH
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defun case-insensitive-org-roam-node-read (orig-fn &rest args)
-  (let ((completion-ignore-case t))
-    (apply orig-fn args)))
+;; (defun case-insensitive-org-roam-node-read (orig-fn &rest args)
+;;   (let ((completion-ignore-case t))
+;;     (apply orig-fn args)))
     
-(advice-add 'org-roam-node-read :around #'case-insensitive-org-roam-node-read)
+;; (advice-add 'org-roam-node-read :around #'case-insensitive-org-roam-node-read)
+
+;; Insert link with org id for headline
+(setq org-id-link-to-org-use-id "create-if-interactive")
+
+;; Text wrap
+(add-hook 'text-mode-hook 'turn-on-visual-line-mode)
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  BABEL SRC
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; (org-babel-do-load-languages
+;;  'org-babel-load-languages
+;;  '((emacs-lisp . t)
+;;    (R . t)
+;;    (css . t)
+;;    ))
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  KEYBINDING
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+;; Custom keyboard shortcuts
+(progn
+  (global-set-key (kbd "M-s") 'save-buffer)
+  (global-set-key (kbd "M-w") 'kill-buffer)
+  (global-set-key (kbd "M-f") 'swiper)
+  (global-set-key (kbd "M-c") 'kill-ring-save)
+  (global-set-key (kbd "M-v") 'yank)
+  (global-set-key (kbd "M-z") 'undo)
+  (global-set-key (kbd "C-c <left>")  'windmove-left)
+  (global-set-key (kbd "C-c <right>") 'windmove-right)
+  (global-set-key (kbd "C-c <up>")    'windmove-up)
+  (global-set-key (kbd "C-c <down>")  'windmove-down)
+  (global-set-key (kbd "C-c l") #'org-store-link)
+  (global-set-key (kbd "C-c a") #'org-agenda)
+  (global-set-key (kbd "C-c c") #'org-capture)
+  (global-set-key (kbd "C-c b") #'org-switchb)
+  ;; (global-set-key (kbd "C-c j")  'org-journal-new-date-entry)
+  (global-set-key (kbd "M-x") #'helm-M-x)
+  (global-set-key (kbd "C-x r b") #'helm-filtered-bookmarks)
+  (global-set-key (kbd "C-x C-f") #'helm-find-files)
+  (global-set-key (kbd "C-M-f" ) 'consult-org-roam-search)
+  (global-set-key (kbd "C-M-s" ) 'helm-org-rifle-org-directory)
+  ;; (global-set-key (kbd "C-x C-f" ) 'counsel-find-file)
+  (global-set-key (kbd "C-c i d" ) 'org-id-get-create)
+  (global-set-key (kbd "<f12>" ) 'org-transclusion-add)
+  (global-set-key (kbd "C-c n t" ) 'org-transclusion-mode)
+  )
+
+;; Remap TAB for completion
+;; Source: https://emacs.stackexchange.com/questions/33727/how-does-spacemacs-allow-tab-completion-in-helm#38235
+;; https://writequit.org/denver-emacs/presentations/2016-03-01-helm.html
+  (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
+  (define-key helm-map (kbd "TAB") #'helm-execute-persistent-action)
+;; make TAB works in terminal, C-i is tha same as TAB
+(define-key helm-map (kbd "C-i") 'helm-execute-persistent-action)
+
+;; Answering just 'y' or 'n' will do
+(defalias 'yes-or-no-p 'y-or-n-p)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  CUSTOMIZED VARIABLES
@@ -532,11 +705,9 @@ charset
      (holiday-fixed 12 26 "Boxing Day")))
  '(calendar-mark-holidays-flag t)
  '(custom-safe-themes
-   '("f366d4bc6d14dcac2963d45df51956b2409a15b770ec2f6d730e73ce0ca5c8a7" "f1882fc093d7af0794aa8819f15aab9405ca109236e5f633385a876052532468" "37c8c2817010e59734fe1f9302a7e6a2b5e8cc648cf6a6cc8b85f3bf17fececf" "be84a2e5c70f991051d4aaf0f049fa11c172e5d784727e0b525565bb1533ec78" "251ed7ecd97af314cd77b07359a09da12dcd97be35e3ab761d4a92d8d8cf9a71" "a9abd706a4183711ffcca0d6da3808ec0f59be0e8336868669dc3b10381afb6f" "3fe1ebb870cc8a28e69763dde7b08c0f6b7e71cc310ffc3394622e5df6e4f0da" "b99e334a4019a2caa71e1d6445fc346c6f074a05fcbb989800ecbe54474ae1b0" "8d8207a39e18e2cc95ebddf62f841442d36fcba01a2a9451773d4ed30b632443" "b54376ec363568656d54578d28b95382854f62b74c32077821fdfd604268616a" "89d9dc6f4e9a024737fb8840259c5dd0a140fd440f5ed17b596be43a05d62e67" "4ff1c4d05adad3de88da16bd2e857f8374f26f9063b2d77d38d14686e3868d8d" "a44e2d1636a0114c5e407a748841f6723ed442dc3a0ed086542dc71b92a87aee" "49acd691c89118c0768c4fb9a333af33e3d2dca48e6f79787478757071d64e68" "f46ebf04f3877132b28a245b063a51bc8c4c2a68bbf58ef4257fae613a6447c4" "31deed4ac5d0b65dc051a1da3611ef52411490b2b6e7c2058c13c7190f7e199b" "fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" "7e068da4ba88162324d9773ec066d93c447c76e9f4ae711ddd0c5d3863489c52" default))
+   '("7b8f5bbdc7c316ee62f271acf6bcd0e0b8a272fdffe908f8c920b0ba34871d98" "636b135e4b7c86ac41375da39ade929e2bd6439de8901f53f88fde7dd5ac3561" "51c71bb27bdab69b505d9bf71c99864051b37ac3de531d91fdad1598ad247138" "afa47084cb0beb684281f480aa84dab7c9170b084423c7f87ba755b15f6776ef" "7a424478cb77a96af2c0f50cfb4e2a88647b3ccca225f8c650ed45b7f50d9525" "f458b92de1f6cf0bdda6bce23433877e94816c3364b821eb4ea9852112f5d7dc" "a5270d86fac30303c5910be7403467662d7601b821af2ff0c4eb181153ebfc0a" "2e05569868dc11a52b08926b4c1a27da77580daa9321773d92822f7a639956ce" "5586a5db9dadef93b6b6e72720205a4fa92fd60e4ccfd3a5fa389782eab2371b" "da75eceab6bea9298e04ce5b4b07349f8c02da305734f7c0c8c6af7b5eaa9738" "ddffe74bc4bf2c332c2c3f67f1b8141ee1de8fd6b7be103ade50abb97fe70f0c" "5b9a45080feaedc7820894ebbfe4f8251e13b66654ac4394cb416fef9fdca789" "2bcd3850ef2d18a4c9208fe3e2a78c95fb82f48c26661c86a51ea39152f3577e" "d537a9d42c6f5349d1716ae9be9a0645cc168f7aff2a8353819d570e5d02c0b3" "2d70bca08b194d0becf19a1df2c54fcb78daeeebc880042de47c735a5c837af0" "ec8d9249bfb886752ee7a12bf6668665b1d053f30122720a99ef60f444a13652" "6c655326d9bb38d4be02d364d344bfa61b3c8fdabd1cf4b97dddc8c0b3047b47" "443e2c3c4dd44510f0ea8247b438e834188dc1c6fb80785d83ad3628eadf9294" "7e377879cbd60c66b88e51fad480b3ab18d60847f31c435f15f5df18bdb18184" "e1f4f0158cd5a01a9d96f1f7cdcca8d6724d7d33267623cc433fe1c196848554" "60ada0ff6b91687f1a04cc17ad04119e59a7542644c7c59fc135909499400ab8" "ae426fc51c58ade49774264c17e666ea7f681d8cae62570630539be3d06fd964" "545ab1a535c913c9214fe5b883046f02982c508815612234140240c129682a68" "ce4234c32262924c1d2f43e6b61312634938777071f1129c7cde3ebd4a3028da" "56044c5a9cc45b6ec45c0eb28df100d3f0a576f18eef33ff8ff5d32bac2d9700" "4fda8201465755b403a33e385cf0f75eeec31ca8893199266a6aeccb4adedfa4" "1cae4424345f7fe5225724301ef1a793e610ae5a4e23c023076dc334a9eb940a" "00cec71d41047ebabeb310a325c365d5bc4b7fab0a681a2a108d32fb161b4006" "871b064b53235facde040f6bdfa28d03d9f4b966d8ce28fb1725313731a2bcc8" "046a2b81d13afddae309930ef85d458c4f5d278a69448e5a5261a5c78598e012" "8d3ef5ff6273f2a552152c7febc40eabca26bae05bd12bc85062e2dc224cde9a" "bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" "02f57ef0a20b7f61adce51445b68b2a7e832648ce2e7efb19d217b6454c1b644" "1a1ac598737d0fcdc4dfab3af3d6f46ab2d5048b8e72bc22f50271fd6d393a00" "a876039e0832c9a0e11af80ffbdbb4539aede1fbdc19460290fc4d1bf3a21741" "76c646974f43b321a8fd460a0f5759f916654575da5927d3fd4195029c158018" "e3daa8f18440301f3e54f2093fe15f4fe951986a8628e98dcd781efbec7a46f2" "628278136f88aa1a151bb2d6c8a86bf2b7631fbea5f0f76cba2a0079cd910f7d" "f366d4bc6d14dcac2963d45df51956b2409a15b770ec2f6d730e73ce0ca5c8a7" "f1882fc093d7af0794aa8819f15aab9405ca109236e5f633385a876052532468" "37c8c2817010e59734fe1f9302a7e6a2b5e8cc648cf6a6cc8b85f3bf17fececf" "be84a2e5c70f991051d4aaf0f049fa11c172e5d784727e0b525565bb1533ec78" "251ed7ecd97af314cd77b07359a09da12dcd97be35e3ab761d4a92d8d8cf9a71" "a9abd706a4183711ffcca0d6da3808ec0f59be0e8336868669dc3b10381afb6f" "3fe1ebb870cc8a28e69763dde7b08c0f6b7e71cc310ffc3394622e5df6e4f0da" "b99e334a4019a2caa71e1d6445fc346c6f074a05fcbb989800ecbe54474ae1b0" "8d8207a39e18e2cc95ebddf62f841442d36fcba01a2a9451773d4ed30b632443" "b54376ec363568656d54578d28b95382854f62b74c32077821fdfd604268616a" "89d9dc6f4e9a024737fb8840259c5dd0a140fd440f5ed17b596be43a05d62e67" "4ff1c4d05adad3de88da16bd2e857f8374f26f9063b2d77d38d14686e3868d8d" "a44e2d1636a0114c5e407a748841f6723ed442dc3a0ed086542dc71b92a87aee" "49acd691c89118c0768c4fb9a333af33e3d2dca48e6f79787478757071d64e68" "f46ebf04f3877132b28a245b063a51bc8c4c2a68bbf58ef4257fae613a6447c4" "31deed4ac5d0b65dc051a1da3611ef52411490b2b6e7c2058c13c7190f7e199b" "fa2b58bb98b62c3b8cf3b6f02f058ef7827a8e497125de0254f56e373abee088" "7e068da4ba88162324d9773ec066d93c447c76e9f4ae711ddd0c5d3863489c52" default))
  '(desktop-save-mode t)
  '(global-display-line-numbers-mode t)
- '(global-visual-line-mode nil)
- '(global-visual-line-mode-hook nil)
  '(holiday-general-holidays
    '((holiday-fixed 1 1 "New Year's Day")
      (holiday-float 2 1 3 "Family Day")
@@ -575,5 +746,5 @@ charset
  '(org-super-agenda-mode t)
  '(org-support-shift-select nil)
  '(package-selected-packages
-   '(org-transclusion ivy consult-org-roam org-roam-ui monokai-theme rg timu-macos-theme timu-spacegrey-theme treemacs ef-themes leuven-theme org-beautify-theme org-journal moe-theme espresso-theme htmlize calfw-org calfw-ical org-notifications alert windresize doom-themes gruvbox-theme org-caldav org-super-agenda calfw zenburn-theme spacemacs-theme color-theme-sanityinc-tomorrow catppuccin-theme atom-one-dark-theme))
+   '(magit flycheck elpy esup ess markdown-mode swiper org-transclusion consult-org-roam org-roam-ui timu-macos-theme treemacs espresso-theme htmlize windresize doom-themes gruvbox-theme org-super-agenda zenburn-theme spacemacs-theme))
  '(shift-select-mode t))
