@@ -113,8 +113,8 @@ charset
  '(org-agenda-date-today ((t (:foreground "light green" :slant italic :weight bold))))
  '(org-document-title ((t (:height 1.5 :underline nil))))
  '(org-headline-done ((((class color) (min-colors 16) (background dark)) (:foreground "#9c9197" :strike-through nil))))
- '(org-journal-calendar-entry-face ((t (:foreground "light pink" :slant italic))))
- '(org-journal-calendar-scheduled-face ((t (:foreground "HotPink1" :slant italic))))
+;; '(org-journal-calendar-entry-face ((t (:foreground "light pink" :slant italic))))
+;; '(org-journal-calendar-scheduled-face ((t (:foreground "HotPink1" :slant italic))))
  '(org-level-1 ((t (:inherit outline-1 :height 1.25 :family "DejaVu Sans Mono" :weight bold))))
  '(org-level-2 ((t (:inherit outline-2 :height 1.2 :weight normal))))
  '(org-level-3 ((t (:inherit outline-3 :height 1.15 :weight normal))))
@@ -354,10 +354,19 @@ charset
 ;;  CALENDAR
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;;(require 'calfw-ical)
-;;(require 'calfw-org)
-;;(setq cfw:org-overwrite-default-keybinding t) ;; org like keybinding
-;;(cfw:open-ical-calendar "http://www.google.com/calendar/ical/.../basic.ics")
+;;(use-package calfw)
+;; (use-package calfw-cal)
+(use-package calfw-org)
+
+;; (defun my/open-calendar ()
+;;   (interactive)
+;;   (cfw:open-calendar-buffer
+;;    :contents-sources
+;;    (list
+;; ;;    (cfw:org-create-source "Green")  ; orgmode source
+;;     (cfw:org-create-file-source "Blog" "gtd.org")  ; our blog organizational calendar
+;; ;;    (cfw:cal-create-source "Orange") ; diary source
+;;     )))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  CAPTURE TEMPLATE KEYS BINDING
@@ -438,7 +447,7 @@ charset
   ;; :unnarrowed t))) 
   (org-roam-dailies-capture-templates
     '(
-      ("d" "default" entry "* %<%H:%M> %?"
+      ("d" "default" entry "* %<%H:%M>\n  %?"
        :if-new (file+head "%<%Y-%m-%d %a>.org" "#+title: %<%Y-%m-%d %a>\n\n")
        :unnarrowed t)
       ))
@@ -446,7 +455,9 @@ charset
          ("C-c n f" . org-roam-node-find)
          ("C-c n g" . org-roam-ui-mode)
          ("C-c n c" . org-roam-capture)
-         ("C-c n i" . org-roam-node-insert)
+         ("C-c n i" . my-org-roam-node-insert)
+	 ("C-c n t a" . org-roam-tag-add)
+	 ("C-c n t r" . org-roam-ref-add)
          ;; Dailies
          ("C-c n j" . org-roam-dailies-capture-today)
          ("C-c n d d" . org-roam-dailies-goto-today)
@@ -527,7 +538,25 @@ charset
 (add-to-list 'load-path "~/.emacs.d/plugins")
 (load "org-roam-backlink-collections.el")
 
+;; Define function to exclude files in archive nodes
+;; https://www.reddit.com/r/emacs/comments/veesun/orgroam_is_absolutely_fantastic/
+(defun my-org-roam-node-exclude-archive (node)
+    (and
+   ;; no journal files
+   ;; (not (string-match my-date-regexp (org-roam-node-title node)))
+   ;; not tagged `archive'
+   (not (member "archive" (org-roam-node-tags node)))
+   ;; not in any folder named `archive'
+   (not (string-match-p "archive/" (org-roam-node-file node)))))
 
+;;;;; Define custom `org-roam-node-insert' functions with filters.
+(defun my-org-roam-node-insert nil
+ ;; Refined search for org-roam nodes to exclude elements tagged `archive'
+  (interactive)
+  ;; nb: can add initial search string like "^"
+;;  (org-roam-node-find :other-window nil #'my-org-roam-node-exclude-archive)
+  (org-roam-node-insert #'my-org-roam-node-exclude-archive)
+)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  AUTO COMPLETION
@@ -644,12 +673,12 @@ charset
    :ensure t
    :after org-roam
    :init
-   (require 'consult-org-roam)
+;;   (require 'consult-org-roam)
    ;; Activate the minor mode
    (consult-org-roam-mode 1)
    :custom
    ;; Use `ripgrep' for searching with `consult-org-roam-search'
-   (consult-org-roam-grep-func #'consult-ripgrep)
+;;   (consult-org-roam-grep-func #'consult-ripgrep)
    ;; Configure a custom narrow key for `consult-buffer'
    (consult-org-roam-buffer-narrow-key ?r)
    ;; Display org-roam buffers right after non-org-roam buffers
@@ -667,6 +696,14 @@ charset
    ("C-c n l" . consult-org-roam-forward-links)
    ;; ("C-c n r" . consult-org-roam-search)
    )
+
+;; org-transclusion
+(use-package org-transclusion
+  :ensure t
+  :after org-roam
+  :bind
+  ("<f12>" . org-transclusion-mode)
+  )
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  BABEL SRC
@@ -700,18 +737,16 @@ charset
   (global-set-key (kbd "C-c l") #'org-store-link)
   (global-set-key (kbd "C-c a") #'org-agenda)
   (global-set-key (kbd "C-c c") #'org-capture)
-  (global-set-key (kbd "C-c b") #'org-switchb)
-  (global-set-key (kbd "C-x C-b") #'helm-buffers-list)
+  ;;(global-set-key (kbd "C-c b") #'org-switchb)
+  (global-set-key (kbd "C-c b") #'helm-buffers-list)
   ;; (global-set-key (kbd "C-c j")  'org-journal-new-date-entry)
   (global-set-key (kbd "M-x") #'helm-M-x)
   (global-set-key (kbd "C-x r b") #'helm-filtered-bookmarks)
   (global-set-key (kbd "C-x C-f") #'helm-find-files)
-  (global-set-key (kbd "C-M-f" ) 'helm--do-grep-ag)
-  (global-set-key (kbd "C-M-s" ) 'helm-do-ag)
+  (global-set-key (kbd "C-M-f" ) 'helm-do-grep-ag) ;; search in current directory
+  (global-set-key (kbd "C-M-s" ) 'helm-do-ag)      ;; search in specified directory
   (global-set-key (kbd "C-x C-f" ) 'helm-find-files)
   (global-set-key (kbd "C-c i d" ) 'org-id-get-create)
-  (global-set-key (kbd "<f12>" ) 'org-transclusion-add)
-  (global-set-key (kbd "C-c n t" ) 'org-transclusion-mode)
   )
 
 ;; Remap TAB for completion
@@ -756,6 +791,7 @@ charset
  '(doom-earl-grey-brighter-comments t)
  '(doom-earl-grey-brighter-modeline t)
  '(global-display-line-numbers-mode t)
+ '(helm-follow-mode-persistent t)
  '(holiday-general-holidays
    '((holiday-fixed 1 1 "New Year's Day")
      (holiday-float 2 1 3 "Family Day")
@@ -771,8 +807,7 @@ charset
      (holiday-fixed 12 26 "Boxing Day")))
  '(line-spacing 0.3)
  '(org-M-RET-may-split-line nil)
- '(helm-follow-mode-persistent t) ;; enable helm follow mode
-  '(org-adapt-indentation t)
+ '(org-adapt-indentation t)
  '(org-agenda-format-date "%F %a")
  '(org-agenda-loop-over-headlines-in-active-region nil)
  '(org-agenda-skip-deadline-if-done t)
@@ -795,5 +830,5 @@ charset
  '(org-super-agenda-mode t)
  '(org-support-shift-select nil)
  '(package-selected-packages
-   '(exec-path-from-shell helm-ag consult-org-roam cloud-theme sunburn-theme magit flycheck elpy ess markdown-mode swiper org-transclusion org-roam-ui timu-macos-theme treemacs htmlize windresize doom-themes gruvbox-theme org-super-agenda zenburn-theme spacemacs-theme))
+   '(calfw-org calfw-cal calfw exec-path-from-shell helm-ag consult-org-roam cloud-theme sunburn-theme magit flycheck elpy ess markdown-mode swiper org-transclusion org-roam-ui timu-macos-theme treemacs htmlize windresize doom-themes gruvbox-theme org-super-agenda zenburn-theme spacemacs-theme))
  '(shift-select-mode t))
