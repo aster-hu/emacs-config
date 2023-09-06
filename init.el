@@ -620,6 +620,18 @@ charset
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; http://tuhdo.github.io/helm-intro.html
 
+;; The default "C-x c" is quite close to "C-x C-c", which quits Emacs.
+;; Changed to "C-c h". Note: We must set "C-c h" globally, because we
+;; cannot change `helm-command-prefix-key' once `helm-config' is loaded.
+(use-package helm)
+(global-set-key (kbd "M-x") 'helm-M-x)
+(global-set-key (kbd "C-c h") 'helm-command-prefix)
+(global-unset-key (kbd "C-x c"))
+
+(define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to run persistent action
+(define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB work in terminal
+(define-key helm-map (kbd "C-z")  'helm-select-action) ; list actions using C-z
+
 (setq helm-split-window-in-side-p           t ; open helm buffer inside current window, not occupy whole other window
       helm-move-to-line-cycle-in-source     t ; move to end or beginning of source when reaching top or bottom of source.
       helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
@@ -708,6 +720,10 @@ charset
 ;;  BLOGGING WITH ORG-MODE
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Exclude :article: in all export
+
+;;(setq org-export-exclude-tags "article")
+
 ;; hugo blog
 (use-package ox-hugo
   :ensure t   ;Auto-install the package from Melpa
@@ -749,25 +765,22 @@ charset
   (global-set-key (kbd "C-c l") #'org-store-link)
   (global-set-key (kbd "C-c a") #'org-agenda)
   (global-set-key (kbd "C-c c") #'org-capture)
-  ;;(global-set-key (kbd "C-c b") #'org-switchb)
   (global-set-key (kbd "C-c b") #'helm-buffers-list)
-  ;; (global-set-key (kbd "C-c j")  'org-journal-new-date-entry)
-  (global-set-key (kbd "M-x") #'helm-M-x)
   (global-set-key (kbd "C-x r b") #'helm-filtered-bookmarks)
   (global-set-key (kbd "C-x C-f") #'helm-find-files)
+  (global-set-key (kbd "C-M-b") 'eval-buffer)
   (global-set-key (kbd "C-M-f" ) 'helm-do-grep-ag) ;; search in current directory
   (global-set-key (kbd "C-M-s" ) 'helm-do-ag)      ;; search in specified directory
-  (global-set-key (kbd "C-x C-f" ) 'helm-find-files)
   (global-set-key (kbd "C-c i d" ) 'org-id-get-create)
   )
 
 ;; Remap TAB for completion
 ;; Source: https://emacs.stackexchange.com/questions/33727/how-does-spacemacs-allow-tab-completion-in-helm#38235
 ;; https://writequit.org/denver-emacs/presentations/2016-03-01-helm.html
-  (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
-  (define-key helm-map (kbd "TAB") #'helm-execute-persistent-action)
-;; make TAB works in terminal, C-i is tha same as TAB
-(define-key helm-map (kbd "C-i") 'helm-execute-persistent-action)
+;;   (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action)
+;;   (define-key helm-map (kbd "TAB") #'helm-execute-persistent-action)
+;; ;; make TAB works in terminal, C-i is tha same as TAB
+;; (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action)
 
 ;; Answering just 'y' or 'n' will do
 (defalias 'yes-or-no-p 'y-or-n-p)
@@ -842,5 +855,5 @@ charset
  '(org-super-agenda-mode t)
  '(org-support-shift-select nil)
  '(package-selected-packages
-   '(ox-hugo quarto quarto-mode calfw-org calfw-cal calfw exec-path-from-shell helm-ag consult-org-roam cloud-theme sunburn-theme magit flycheck elpy ess markdown-mode swiper org-transclusion org-roam-ui timu-macos-theme treemacs htmlize windresize doom-themes gruvbox-theme org-super-agenda zenburn-theme spacemacs-theme))
+   '(projectile ox-hugo quarto quarto-mode calfw-org calfw-cal calfw exec-path-from-shell helm-ag consult-org-roam cloud-theme sunburn-theme magit flycheck elpy ess markdown-mode swiper org-transclusion org-roam-ui timu-macos-theme treemacs htmlize windresize doom-themes gruvbox-theme org-super-agenda zenburn-theme spacemacs-theme))
  '(shift-select-mode t))
