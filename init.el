@@ -113,8 +113,6 @@ charset
  '(org-agenda-date-today ((t (:foreground "light green" :slant italic :weight bold))))
  '(org-document-title ((t (:height 1.5 :underline nil))))
  '(org-headline-done ((((class color) (min-colors 16) (background dark)) (:foreground "#9c9197" :strike-through nil))))
-;; '(org-journal-calendar-entry-face ((t (:foreground "light pink" :slant italic))))
-;; '(org-journal-calendar-scheduled-face ((t (:foreground "HotPink1" :slant italic))))
  '(org-level-1 ((t (:inherit outline-1 :height 1.25 :family "DejaVu Sans Mono" :weight bold))))
  '(org-level-2 ((t (:inherit outline-2 :height 1.2 :weight normal))))
  '(org-level-3 ((t (:inherit outline-3 :height 1.15 :weight normal))))
@@ -705,6 +703,20 @@ charset
   ("<f12>" . org-transclusion-mode)
   )
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;  BLOGGING WITH ORG-MODE
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; hugo blog
+(use-package ox-hugo
+  :ensure t   ;Auto-install the package from Melpa
+  :pin melpa  ;`package-archives' should already have ("melpa" . "https://melpa.org/packages/")
+  :after ox)
+
+;; support quarto
+(use-package quarto-mode)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;  BABEL SRC
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -830,5 +842,5 @@ charset
  '(org-super-agenda-mode t)
  '(org-support-shift-select nil)
  '(package-selected-packages
-   '(calfw-org calfw-cal calfw exec-path-from-shell helm-ag consult-org-roam cloud-theme sunburn-theme magit flycheck elpy ess markdown-mode swiper org-transclusion org-roam-ui timu-macos-theme treemacs htmlize windresize doom-themes gruvbox-theme org-super-agenda zenburn-theme spacemacs-theme))
+   '(ox-hugo quarto quarto-mode calfw-org calfw-cal calfw exec-path-from-shell helm-ag consult-org-roam cloud-theme sunburn-theme magit flycheck elpy ess markdown-mode swiper org-transclusion org-roam-ui timu-macos-theme treemacs htmlize windresize doom-themes gruvbox-theme org-super-agenda zenburn-theme spacemacs-theme))
  '(shift-select-mode t))
