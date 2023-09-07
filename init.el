@@ -58,11 +58,11 @@
 ;;(require 'org)
 (use-package org
   :init
-  (setq org-directory "~/Library/CloudStorage/Dropbox/000_Org-mode")
+  (setq org-directory "~/Library/CloudStorage/Dropbox/Code/000_Org-mode")
   (setq org-default-notes-file "capture.org")
   (setq org-roam-directory (concat org-directory "/roam"))
   )
-;; (setq org-directory "~/Library/CloudStorage/Dropbox/000_Org-mode")
+;; (setq org-directory "~/Library/CloudStorage/Dropbox/Code/000_Org-mode")
 ;; (setq org-default-notes-file "capture.org")
 ;; (setq org-roam-directory (concat org-directory "/roam"))
 
