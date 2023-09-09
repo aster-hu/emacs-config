@@ -125,6 +125,7 @@ charset
 ;; (setq org-todo-keyword-faces
 ;;       (quote (;; 
 ;; 	      ("NEXT" :foreground "#E8A0BF" :weight bold)
+;;        ("GOAL" :foreground "#2aa198" :weight bold)
 ;;               ("LATER" :foreground "#BA90C6" :weight bold)
 ;;               ("WAIT" :foreground "#76b1d1" :weight bold)
 ;;               ("DONE" :foreground "#97dc97" :weight bold)
