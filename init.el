@@ -102,7 +102,7 @@
 charset
 (font-spec :family "WenQuanYi Micro Hei Mono" :size 24)))
 
-(setq face-font-rescale-alist '(("WenQuanYi Zen Hei" . 1.2)))
+(setq face-font-rescale-alist '(("WenQuanYi Micro Hei Mono" . 1.2)))
 
 
 (custom-set-faces
